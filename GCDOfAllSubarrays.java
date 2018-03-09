@@ -24,14 +24,6 @@ class Mod{
 	}	
 }
 
-class pair implements Comparable<pair>{
-	long x ; int y ;
-	pair(long a,int b){ x=a ; y=b ; }
-	public int compareTo(pair p){
-		return (this.x<p.x ? -1 : (this.x>p.x ? 1 : (this.y<p.y ? -1 : (this.y>p.y ? 1 : 0)))) ; 
-	}
-}
-
 class Solver{
 
 	void Solve() throws IOException{
@@ -70,11 +62,4 @@ class Solver{
 		while(a%b!=0){long c=b ; b=a%b ; a=c ;}
 		return b ;
 	}
-}
-@SuppressWarnings("serial")
-class mylist extends ArrayList<Integer>{
-	
-}
-@SuppressWarnings("serial")
-class MySet extends TreeSet<pair>{
 }
