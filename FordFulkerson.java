@@ -202,12 +202,13 @@ public class FordFulkerson {
 	public static void main(String[] args) throws IOException {
 
 		long start = System.currentTimeMillis();
-		Scanner sc = new Scanner(new File("ditch.in"));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("ditch.out")));
+//		Scanner sc = new Scanner(new File("ditch.in"));
+//		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("ditch.out")));
 
+		Scanner sc = new Scanner(System.in);
 		// create flow network with V vertices and E edges
-		int E = sc.nextInt();
 		int V = sc.nextInt();
+		int E = sc.nextInt();
 		int s = 0, t = V - 1;
 		FlowNetwork G = new FlowNetwork(V);
 
@@ -224,8 +225,11 @@ public class FordFulkerson {
 			}
 		}
 
-		out.println((int) maxflow.value());
-		out.close();
+		System.out.println((int) maxflow.value());
+		
+		for (int i = 0; i < V; i++) {
+			System.out.println(maxflow.inCut(i) + " ");
+		}
 		sc.close();
 		
 		System.out.println("$:" + (System.currentTimeMillis() - start));

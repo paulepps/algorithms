@@ -30,7 +30,7 @@ public class DijkstraUndirectedSP {
 			{
 				if(i==at) continue;
 				
-				int adj = G.adj(at, i);
+				int adj = (int)G.adj(at, i);
 				if(adj == -1) continue;
 
 				if(cost + adj < dist[i])

@@ -1,3 +1,4 @@
+package math;
 /**
  * The Combinations class provides an enumeration of all subsets of a group of 
  * n objects taken r at a time. The constructor for Combinations accepts the group as 

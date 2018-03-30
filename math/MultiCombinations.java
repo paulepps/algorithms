@@ -1,3 +1,4 @@
+package math;
 import java.util.HashSet;
 
 public class MultiCombinations {

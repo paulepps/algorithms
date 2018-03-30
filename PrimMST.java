@@ -20,7 +20,7 @@ public class PrimMST {
 			for (int j = 0; j < G.V(); j++) {
 				for (int k = 0; k < G.V(); k++) {
 					if (marked[j] && !marked[k] && G.adj(j,k) < min) {
-						min = G.adj(j, k);
+						min = (int)G.adj(j, k);
 						minAt = ( ((long)j) << 32) | ((long)k);
 					}
 				}

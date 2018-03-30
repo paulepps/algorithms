@@ -1,3 +1,4 @@
+package math;
 import java.math.*;
 /**
  * The class Combinatoric contains methods for performing basic combinatoric operations

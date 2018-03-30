@@ -1,36 +1,24 @@
+package math;
+import java.util.Arrays;
 
 /*
 ID: paul9
 LANG: JAVA
 TASK: nuggets
- */
-import java.io.*;
-import java.util.*;
 
-//public class Frobenius
-class nuggets
+The coin problem (also referred to as the Frobenius coin problem or 
+Frobenius problem, after the mathematician Ferdinand Frobenius) is 
+a mathematical problem that asks for the largest monetary amount 
+that cannot be obtained using only coins of specified denominations.
+
+Also known as the McNugget number.
+*/
+
+public class Frobenius
 {
 	static final int INFINITY = 2000000001;
-	
-	public static void main(String[] args) throws IOException
-	{
-		long start = System.currentTimeMillis();
-		Scanner sc = new Scanner(new File("nuggets.in"));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("nuggets.out")));
 
-		int N = sc.nextInt();
-		int[] a = new int[N];
-		
-		for (int i = 0; i < N; i++) {
-			a[i] = sc.nextInt();
-		}
-		
-	    out.println(frobeniusNumber(a));
-		out.close();
-		System.out.println("$:"+(System.currentTimeMillis()-start));System.exit(0);
-	}
-
-	static int frobeniusNumber(int[] a) {
+	int frobeniusNumber(int[] a) {
 		Arrays.sort(a);
 		int[] aa = residueTable(a);
 		Arrays.sort(aa);
@@ -40,7 +28,7 @@ class nuggets
 		return aa[aa.length - 1] - a[0] < 0 ? 0 : aa[aa.length - 1] - a[0];
 	}
 
-	static int[] residueTable(int[] a) {
+	int[] residueTable(int[] a) {
 		int[] n = new int[a[0]];
 		Arrays.fill(n, INFINITY);
 		n[0] = 0;
@@ -74,7 +62,7 @@ class nuggets
 	}
 
 
-	static int gcd(int a, int b) {
+	int gcd(int a, int b) {
 		a = Math.abs(a);
 		b = Math.abs(b);
 		
@@ -84,5 +72,13 @@ class nuggets
 		}
 		
 		return b;
+	}
+	
+	public static void main(String[] args)
+	{
+		int[] a = new int[] {6, 9, 20};
+
+		Frobenius frob = new Frobenius();
+		System.out.println(frob.frobeniusNumber(a));	// 43
 	}
 }
