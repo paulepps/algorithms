@@ -6,125 +6,246 @@ TASK: comehome
 import java.io.*;
 import java.util.*;
 
-//public class Main
-class comehome 
+public class Main
+//class comehome 
 {
+    public static FasterScanner in = new FasterScanner();
+    public static Writer out = new Writer();
+
+    static ArrayList<Point2D> list = new ArrayList<Point2D>();
+
 	public static void main(String[] args) throws IOException 
 	{
 		long start = System.currentTimeMillis();
-		Scanner sc = new Scanner(new File("comehome.in"));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("comehome.out")));
+
+		int N = in.nextInt();
 		
-		int N = sc.nextInt();
-        EdgeWeightedGraph G = new EdgeWeightedGraph(52);
-        
-        for (int i = 0; i < N; i++) {
-			char a1 = sc.next().charAt(0);
-			int a = Character.isUpperCase(a1) ? a1-'A'+26 : a1-'a';
-
-			char b1 = sc.next().charAt(0);
-			int b = Character.isUpperCase(b1) ? b1-'A'+26 : b1-'a';
-
-			int w = sc.nextInt();
-			
-        	G.addEdge(a, b, w);
-        }
-
-        DijkstraUndirectedSP sp = new DijkstraUndirectedSP(G, 51);
-
-		int maxAt = 26;
-		for(int i = 26; i < 51;i++)
-		{
-			int d = sp.distTo(i);
-			if(d == Integer.MAX_VALUE) continue;
-			if(sp.distTo(maxAt) > d)
-			{
-				maxAt = i;
-			}
+		for (int i = 0; i < N; i++) {
+			int L = in.nextInt();
+			Point2D p = new Point2D(L, 0);
+			list.add(p);
+		}
+		
+		for (int i = 0; i < N; i++) {
+			int H = in.nextInt();
+			Point2D p = list.get(i);
+			p.y = H;
+			list.set(i, p);
+		}
+		
+		Collections.sort(list);;
+		
+		int[][] sums = new int[N][3];
+		sums[N - 1][0] = list.get(N - 1).x;
+		sums[N - 1][1] = list.get(N - 1).y;
+		sums[N - 1][2] = list.get(N - 1).y;
+		
+		for (int i = N - 2; i >= 0; i--) {
+			Point2D p = list.get(i);
+			sums[i][0] = p.x;			
+			sums[i][1] = p.y;			
+			sums[i][2] = Math.max(sums[i+1][2], p.y);			
 		}
 
-		out.println(((char)((maxAt-26)+'A'))+" "+sp.distTo(maxAt));
+		int energy = 0;
 		
-		sc.close();
+		for (int i = 0; i < N; i++) {
+			int y = sums[i][1];
+			int j = i+1;
+			
+			while (j < N && y >= sums[j][0])
+				j++;
+			
+			if (j < N)
+				energy = (energy + sums[j][2]) % 1000000007;
+			else
+				energy = (energy + sums[i][2]) % 1000000007;
+		}
+
+		out.println(energy);
 		out.close();
 		
 		System.out.println(System.currentTimeMillis() - start);
 	}
 }
 
-class DijkstraUndirectedSP {
+class Point2D implements Comparable<Point2D> {
 
-	private int N;
-	private int dist[];
-	private PriorityQueue<Long> pq;
-	
-    public DijkstraUndirectedSP(EdgeWeightedGraph G, int s) {
-	    
-    	N = G.V();
-    	dist = new int[N];
-    	Arrays.fill(dist,Integer.MAX_VALUE);
-    	
-    	pq = new PriorityQueue<>();
-    	pq.add((0L<<32)|(N-1));
-    	
-		while(pq.size() > 0)
-		{
-			long p = pq.poll();
-			int at = (int)(p&0xFFFFFFFFL);
-			int cost = (int)(p>>>32);	
+    public int x;    // x coordinate
+    public int y;    // y coordinate
 
-
-			if(cost >= dist[at]) continue;
-			dist[at] = cost;
-
-			for(int i = 0; i < N;i++)
-			{
-				if(i==at) continue;
-				
-				int adj = G.adj(at, i);
-				if(adj == -1) continue;
-
-				if(cost + adj < dist[i])
-				{
-					pq.add(((long)cost + adj<< 32)|i);
-				}
-			}			
-		}
+    public Point2D(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
-    public int distTo(int v) {
-        return dist[v];
+    public int compareTo(Point2D that) {
+        if (this.x < that.x) return -1;
+        if (this.x > that.x) return +1;
+        if (this.y < that.y) return -1;
+        if (this.y > that.y) return +1;
+        return 0;
     }
+
 }
 
-class EdgeWeightedGraph {
+class Writer {
 
-	private final int V;
-	private int[][] adj;
-	
-	public EdgeWeightedGraph(int V) {
-        if (V < 0) throw new IllegalArgumentException("Number of vertices must be nonnegative");
-        this.V = V;
-        adj = new int[V][V];
-		for(int i = 0; i < V; i++)
-			Arrays.fill(adj[i],-1);
-	}
-	
-    public int V() {
-        return V;
-    }
+private BufferedWriter output;
 
-    public int adj(int v, int w) {
-        return adj[v][w];
-    }
+public Writer() {
+output = new BufferedWriter(new OutputStreamWriter(System.out));
+}
 
+public Writer(String s) {
+try {
+output = new BufferedWriter(new FileWriter(s));
+} catch(Exception ex) { ex.printStackTrace(); System.exit(0);}
+}
 
-    public void addEdge(int a, int b, int weight) {
-		if(adj[a][b] == -1 || weight < adj[a][b])
-		{
-			adj[a][b] = weight;
-			adj[b][a] = weight;
-		}
-    }
+public void println() {
+try {
+output.append("\n");
+} catch(IOException io) { io.printStackTrace(); System.exit(0);}
+}
+
+public void print(Object o) {
+try {
+output.append(o.toString());
+} catch(IOException io) { io.printStackTrace(); System.exit(0);}
+}
+
+public void println(Object o) {
+try {
+output.append(o.toString()+"\n");
+} catch(IOException io) { io.printStackTrace(); System.exit(0);}
+}
+
+public void printf(String format, Object... args) {
+try {
+output.append(String.format(format, args));
+} catch(IOException io) { io.printStackTrace(); System.exit(0);}
+}
+
+public void printfln(String format, Object... args) {
+try {
+output.append(String.format(format, args)+"\n");
+} catch(IOException io) { io.printStackTrace(); System.exit(0);}
+}
+
+public void flush() {
+try {
+output.flush();
+} catch(IOException io) { io.printStackTrace(); System.exit(0);}
+}
+
+public void close() {
+try {
+output.close();
+} catch(IOException io) { io.printStackTrace(); System.exit(0);}
+}
+}
+
+class FasterScanner {
+private InputStream mIs;
+private byte[] buf = new byte[1024];
+private int curChar;
+private int numChars;
+
+public FasterScanner() {
+this(System.in);
+}
+
+public FasterScanner(InputStream is) {
+mIs = is;
+}
+
+public int read() {
+if (numChars == -1)
+throw new InputMismatchException();
+if (curChar >= numChars) {
+curChar = 0;
+try {
+numChars = mIs.read(buf);
+} catch (IOException e) {
+throw new InputMismatchException();
+}
+if (numChars <= 0)
+return -1;
+}
+return buf[curChar++];
+}
+
+public String nextLine() {
+int c = read();
+while (isSpaceChar(c))
+c = read();
+StringBuilder res = new StringBuilder();
+do {
+res.appendCodePoint(c);
+c = read();
+} while (!isEndOfLine(c));
+return res.toString();
+}
+
+public String nextString() {
+int c = read();
+while (isSpaceChar(c))
+c = read();
+StringBuilder res = new StringBuilder();
+do {
+res.appendCodePoint(c);
+c = read();
+} while (!isSpaceChar(c));
+return res.toString();
+}
+
+public long nextLong() {
+int c = read();
+while (isSpaceChar(c))
+c = read();
+int sgn = 1;
+if (c == '-') {
+sgn = -1;
+c = read();
+}
+long res = 0;
+do {
+if (c < '0' || c > '9')
+throw new InputMismatchException();
+res *= 10;
+res += c - '0';
+c = read();
+} while (!isSpaceChar(c));
+return res * sgn;
+}
+
+public int nextInt() {
+int c = read();
+while (isSpaceChar(c))
+c = read();
+int sgn = 1;
+if (c == '-') {
+sgn = -1;
+c = read();
+}
+int res = 0;
+do {
+if (c < '0' || c > '9')
+throw new InputMismatchException();
+res *= 10;
+res += c - '0';
+c = read();
+} while (!isSpaceChar(c));
+return res * sgn;
+}
+
+public boolean isSpaceChar(int c) {
+return c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == -1;
+}
+
+public boolean isEndOfLine(int c) {
+return c == '\n' || c == '\r' || c == -1;
+}
 
 }
