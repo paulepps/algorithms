@@ -4,137 +4,67 @@ import java.util.Scanner;
 
 public class Main {
 
-	static int numNodes, logNumNodes, root;
+	static final int MAXN = 20000 + 5;
+	static final int INF = 1 << 28;
 
-	static List<Integer>[] children; // children[i] contains the children of node i
+	static List<Integer>[] G = new ArrayList[MAXN];
+	static int[] maxs = new int[MAXN];
+	static int[] s = new int[MAXN];
+	static int T, n;
 
-	static int[][] A; // A[i][j] is the 2^j-th ancestor of node i, or -1 if that ancestor does not
-				// exist
-	static int[] L; // L[i] is the distance between node i and the root
-
-	// floor of the binary logarithm of n
-	static int lb(int n) {
-		if (n == 0)
-			return -1;
-
-		int p = 0;
-
-		if (n >= 1 << 16) {
-			n >>= 16;
-			p += 16;
-		}
-		if (n >= 1 << 8) {
-			n >>= 8;
-			p += 8;
-		}
-		if (n >= 1 << 4) {
-			n >>= 4;
-			p += 4;
-		}
-		if (n >= 1 << 2) {
-			n >>= 2;
-			p += 2;
-		}
-		if (n >= 1 << 1) {
-			p += 1;
-		}
-
-		return p;
-	}
-
-	static void DFS(int i, int l) {
-
-		L[i] = l;
-		for (int j = 0; j < children[i].size(); j++) {
-			DFS(children[i].get(j), l + 1);
+	static void init() {
+		for (int i = 0; i < n; ++i) {
+			G[i] = new ArrayList<Integer>();
+			
+			maxs[i] = 0;
+			s[i] = 0;
 		}
 	}
 
-	static int LCA(int p, int q) {
-		// ensure node p is at least as deep as node q
-		if (L[p] < L[q]) {
-			int temp = p;
-			p = q;
-			q = temp;
-		}
-
-		// "binary search" for the ancestor of node p situated on the same level as q
-		for (int i = logNumNodes; i >= 0; i--)
-			if (L[p] - (1 << i) >= L[q])
-				p = A[p][i];
-
-		if (p == q)
-			return p;
-
-		// "binary search" for the LCA
-		for (int i = logNumNodes; i >= 0; i--)
-			if (A[p][i] != -1 && A[p][i] != A[q][i]) {
-				p = A[p][i];
-				q = A[q][i];
+	static void dfs(int u, int fa) {
+		s[u] = 1;
+		
+		for (int i = 0; i < G[u].size(); ++i) {
+			int v = G[u].get(i);
+		
+			if (v != fa) {
+				dfs(v, u);
+				s[u] += s[v];
+				maxs[u] = Math.max(maxs[u], s[v]);
 			}
-
-		return A[p][0];
+		}
 	}
 
 	public static void main(String[] args) {
-
 		Scanner sc = new Scanner(System.in);
 
-		int T = sc.nextInt();
+		T = sc.nextInt();
 
 		while (T-- > 0) {
-			int N = sc.nextInt();
+			n = sc.nextInt();
 
-			numNodes = N;
-			logNumNodes = lb(numNodes);
+			init();
 
-			children = new ArrayList[numNodes];
+			for (int i = 1; i < n; ++i) {
+				int u = sc.nextInt() - 1;
+				int v = sc.nextInt() - 1;
 
-			for (int i = 0; i < numNodes; i++) {
-				children[i] = new ArrayList<Integer>();
+				G[u].add(v);
+				G[v].add(u);
 			}
+			dfs(0, -1);
+			int ans = INF, pla = 0;
 
-			A = new int[numNodes][logNumNodes + 1];
-			L = new int[numNodes];
-
-			boolean[] hasAncestor = new boolean[numNodes];
-
-			for (int i = 0; i < numNodes - 1; i++) {
-				int parent = sc.nextInt() - 1; // convert to 0-based
-				int child = sc.nextInt() - 1; // convert to 0-based
-
-				A[child][0] = parent;
-
-				children[parent].add(child);
-
-				hasAncestor[child] = true;
-			}
-
-			// whoever doesn't have an ancestor is the root
-			for (int i = 0; i < hasAncestor.length; i++) {
-				if (!hasAncestor[i]) {
-					root = i;
-					A[i][0] = -1;
-					break;
+			for (int i = 0; i < n; ++i) {
+				int t = Math.max(maxs[i], n - s[i]);
+				if (t < ans) {
+					ans = t;
+					pla = i + 1;
 				}
 			}
-
-			// precompute A using dynamic programming
-			for (int j = 1; j <= logNumNodes; j++) {
-				for (int i = 0; i < numNodes; i++) {
-					if (A[i][j - 1] != -1) {
-						A[i][j] = A[A[i][j - 1]][j - 1];
-					} else {
-						A[i][j] = -1;
-					}
-				}
-			}
-
-			// precompute L
-			DFS(root, 0);
-
-			
-			System.out.println(LCA(sc.nextInt() - 1, sc.nextInt() - 1) + 1);
+			System.out.println(pla + " " + ans);
 		}
+		
+		sc.close();
 	}
 }
