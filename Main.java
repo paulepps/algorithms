@@ -1,70 +1,106 @@
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-
-	static final int MAXN = 20000 + 5;
-	static final int INF = 1 << 28;
-
-	static List<Integer>[] G = new ArrayList[MAXN];
-	static int[] maxs = new int[MAXN];
-	static int[] s = new int[MAXN];
-	static int T, n;
-
-	static void init() {
-		for (int i = 0; i < n; ++i) {
-			G[i] = new ArrayList<Integer>();
-			
-			maxs[i] = 0;
-			s[i] = 0;
-		}
-	}
-
-	static void dfs(int u, int fa) {
-		s[u] = 1;
-		
-		for (int i = 0; i < G[u].size(); ++i) {
-			int v = G[u].get(i);
-		
-			if (v != fa) {
-				dfs(v, u);
-				s[u] += s[v];
-				maxs[u] = Math.max(maxs[u], s[v]);
-			}
-		}
-	}
-
+	
+	static final int EAST = 4;
+	static final int SOUTH = 8;
+	
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 
-		T = sc.nextInt();
-
-		while (T-- > 0) {
-			n = sc.nextInt();
-
-			init();
-
-			for (int i = 1; i < n; ++i) {
-				int u = sc.nextInt() - 1;
-				int v = sc.nextInt() - 1;
-
-				G[u].add(v);
-				G[v].add(u);
+		int H = sc.nextInt();
+		int W = sc.nextInt();
+		
+		Graph G = new Graph(H*W);
+		
+		for (int i = 0; i < H * W; i++) {
+			int room = sc.nextInt();
+			
+			if ((room & EAST) == 0) {
+				G.addEdge(i, i+1);
 			}
-			dfs(0, -1);
-			int ans = INF, pla = 0;
 
-			for (int i = 0; i < n; ++i) {
-				int t = Math.max(maxs[i], n - s[i]);
-				if (t < ans) {
-					ans = t;
-					pla = i + 1;
-				}
+			if ((room & SOUTH) == 0) {
+				G.addEdge(i, i+W);
 			}
-			System.out.println(pla + " " + ans);
 		}
 		
 		sc.close();
+		
+		CC cc = new CC(G);
+	
+		int max = 0;
+	    for (int v = 0; v < G.V(); v++) {
+	    	max = Math.max(max,  cc.size(v));
+	    }
+
+		System.out.println(cc.count());
+		System.out.println(max);
+		
 	}
+}
+
+class CC {
+    private boolean[] marked;   // marked[v] = has vertex v been marked?
+    private int[] id;           // id[v] = id of connected component containing v
+    private int[] size;         // size[id] = number of vertices in given component
+    private int count;          // number of connected components
+
+    /**
+     * Computes the connected components of the undirected graph {@code G}.
+     *
+     * @param G the undirected graph
+     */
+    public CC(Graph G) {
+        marked = new boolean[G.V()];
+        id = new int[G.V()];
+        size = new int[G.V()];
+        for (int v = 0; v < G.V(); v++) {
+            if (!marked[v]) {
+                dfs(G, v);
+                count++;
+            }
+        }
+    }
+
+    // depth-first search for a Graph
+    private void dfs(Graph G, int v) {
+        marked[v] = true;
+        id[v] = count;
+        size[count]++;
+        for (int w : G.adj(v)) {
+            if (!marked[w]) {
+                dfs(G, w);
+            }
+        }
+    }
+
+    /**
+     * Returns the component id of the connected component containing vertex {@code v}.
+     */
+    public int id(int v) {
+        return id[v];
+    }
+
+    /**
+     * Returns the number of vertices in the connected component containing vertex {@code v}.
+     */
+    public int size(int v) {
+        return size[id[v]];
+    }
+
+    /**
+     * Returns the number of connected components in the graph {@code G}.
+     */
+    public int count() {
+        return count;
+    }
+
+    /**
+     * Returns true if vertices {@code v} and {@code w} are in the same
+     * connected component.
+     */
+    public boolean connected(int v, int w) {
+        return id(v) == id(w);
+    }
 }
