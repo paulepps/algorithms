@@ -1,3 +1,4 @@
+package graph_algorithms;
 import java.util.Scanner;
 
 public class PrimMSTAdjacencyMatrix {

@@ -3,6 +3,9 @@ import java.util.Iterator;
 import java.util.Queue;
 import java.util.Stack;
 
+import graph_algorithms.BipartiteX;
+import graph_algorithms.Graph;
+
 public class HopcroftKarp {
     private static final int UNMATCHED = -1;
 

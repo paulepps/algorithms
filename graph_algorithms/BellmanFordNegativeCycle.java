@@ -1,106 +1,102 @@
+package graph_algorithms;
 import java.util.Scanner;
 
-public class Main {
-	
-	static final int EAST = 4;
-	static final int SOUTH = 8;
-	
+// http://poj.org/problem?id=3259
+
+public class BellmanFordNegativeCycle {
+
+	static final int maxn = 510;
+	static final int maxw = 2500 * 2 + 200 + 10;
+	static final int INF = 999999999;
+	static int[] d = new int[maxn];
+	static int n, m;
+	static Edge2[] edge = new Edge2[maxw];
+
+	static boolean BellmanFord() {
+		for (int i = 1; i <= n; i++)
+			d[i] = INF; 
+		d[1] = 0; 
+
+		for (int i = 1; i < n; i++) {
+			boolean flag = true; 
+			for (int j = 0; j < m; j++) {
+				int u = edge[j].u;
+				int v = edge[j].v;
+				int t = edge[j].t;
+
+				if (d[v] > d[u] + t)
+				{
+					d[v] = d[u] + t;
+					flag = false;
+				}
+			}
+			if (flag)
+				return false; 
+		}
+
+		for (int i = 0; i < m; i++) {
+			if (d[edge[i].v] > d[edge[i].u] + edge[i].t)
+				return true;
+		}
+		return false;
+	}
+
 	public static void main(String[] args) {
+
 		Scanner sc = new Scanner(System.in);
 
-		int H = sc.nextInt();
-		int W = sc.nextInt();
-		
-		Graph G = new Graph(H*W);
-		
-		for (int i = 0; i < H * W; i++) {
-			int room = sc.nextInt();
-			
-			if ((room & EAST) == 0) {
-				G.addEdge(i, i+1);
+		int T;
+		int M, W;
+
+		T = sc.nextInt();
+
+		while (T-- > 0) {
+			n = sc.nextInt();
+			M = sc.nextInt();
+			W = sc.nextInt();
+
+			m = 0;
+
+			int u, v, t;
+			for (int i = 1; i <= M; i++) {
+				u = sc.nextInt();
+				v = sc.nextInt();
+				t = sc.nextInt();
+				
+				edge[m] = new Edge2();
+				
+				edge[m].u = u;
+				edge[m].v = v;
+				edge[m++].t = t;
+
+				edge[m] = new Edge2();
+				
+				edge[m].u = v;
+				edge[m].v = u;
+				edge[m++].t = t;
 			}
 
-			if ((room & SOUTH) == 0) {
-				G.addEdge(i, i+W);
+			for (int i = 1; i <= W; i++) {
+				u = sc.nextInt();
+				v = sc.nextInt();
+				t = sc.nextInt();
+
+				edge[m] = new Edge2();
+				
+				edge[m].u = u;
+				edge[m].v = v;
+				edge[m++].t = -t;
 			}
+
+			if (BellmanFord())
+				System.out.println("YES");
+			else
+				System.out.println("NO");
 		}
-		
-		sc.close();
-		
-		CC cc = new CC(G);
-	
-		int max = 0;
-	    for (int v = 0; v < G.V(); v++) {
-	    	max = Math.max(max,  cc.size(v));
-	    }
-
-		System.out.println(cc.count());
-		System.out.println(max);
-		
 	}
 }
 
-class CC {
-    private boolean[] marked;   // marked[v] = has vertex v been marked?
-    private int[] id;           // id[v] = id of connected component containing v
-    private int[] size;         // size[id] = number of vertices in given component
-    private int count;          // number of connected components
-
-    /**
-     * Computes the connected components of the undirected graph {@code G}.
-     *
-     * @param G the undirected graph
-     */
-    public CC(Graph G) {
-        marked = new boolean[G.V()];
-        id = new int[G.V()];
-        size = new int[G.V()];
-        for (int v = 0; v < G.V(); v++) {
-            if (!marked[v]) {
-                dfs(G, v);
-                count++;
-            }
-        }
-    }
-
-    // depth-first search for a Graph
-    private void dfs(Graph G, int v) {
-        marked[v] = true;
-        id[v] = count;
-        size[count]++;
-        for (int w : G.adj(v)) {
-            if (!marked[w]) {
-                dfs(G, w);
-            }
-        }
-    }
-
-    /**
-     * Returns the component id of the connected component containing vertex {@code v}.
-     */
-    public int id(int v) {
-        return id[v];
-    }
-
-    /**
-     * Returns the number of vertices in the connected component containing vertex {@code v}.
-     */
-    public int size(int v) {
-        return size[id[v]];
-    }
-
-    /**
-     * Returns the number of connected components in the graph {@code G}.
-     */
-    public int count() {
-        return count;
-    }
-
-    /**
-     * Returns true if vertices {@code v} and {@code w} are in the same
-     * connected component.
-     */
-    public boolean connected(int v, int w) {
-        return id(v) == id(w);
-    }
+class Edge2 {
+	int u, v;
+	int t;
 }
