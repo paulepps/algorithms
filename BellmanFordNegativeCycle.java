@@ -1,4 +1,4 @@
-package graph_algorithms;
+
 import java.util.Scanner;
 
 // http://poj.org/problem?id=3259

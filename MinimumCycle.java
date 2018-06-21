@@ -1,8 +1,10 @@
 
+
 /*
 ID: paul9
 LANG: JAVA
 TASK: fence6
+http://train.usaco.org/usacoprob2?a=7CIQiKqBrpL&S=fence6
  */
 import java.io.*;
 import java.util.*;

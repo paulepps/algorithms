@@ -1,4 +1,4 @@
-package graph_algorithms;
+
 import java.util.Arrays;
 
 public class EdgeWeightedGraph {

@@ -1,6 +1,6 @@
 // http://poj.org/problem?id=2253
 
-package graph_algorithms;
+
 
 import java.util.Arrays;
 import java.util.Scanner;

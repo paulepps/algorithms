@@ -1,5 +1,5 @@
 // http://poj.org/problem?id=1985
-package graph_algorithms;
+
 
 import java.util.Arrays;
 import java.util.LinkedList;
