@@ -1,145 +1,143 @@
-import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
-
-// Implementation of min cost max flow algorithm using adjacency
-// matrix (Edmonds and Karp 1972). This implementation keeps track of
-// forward and reverse edges separately (so you can set cap[i][j] !=
-// cap[j][i]). For a regular max flow, set all edge costs to 0.
-//
-// Running time, O(|V|^2) cost per augmentation
-// max flow: O(|V|^3) augmentations
-// min cost max flow: O(|V|^4 * MAX_EDGE_COST) augmentations
-//
-// INPUT:
-// - graph, constructed using AddEdge()
-// - source
-// - sink
-//
-// OUTPUT:
-// - (maximum flow value, minimum cost value)
-// - To obtain the actual flow, look at positive values only.
 
 public class MinCostMaxFlow {
 
-  private final long INF = Long.MAX_VALUE / 4;
+  // Returns true if there is a path
+  // from source 's' to sink 't' in residual
+  // graph. Also fills parent[] to store the path
 
-  private int N;
-  private long[][] cap, flow, cost;
-  private boolean[] found;
-  private long[] dist, pi, width;
-  private Pair<Long, Long>[] dad;
+  private static boolean bfs(int[][] rGraph, int s, int t, int[] parent) {
 
-  @SuppressWarnings("unchecked")
-  MinCostMaxFlow(int N) {
-    this.N = N;
+    // Create a visited array and mark
+    // all vertices as not visited
+    boolean[] visited = new boolean[rGraph.length];
 
-    cap = new long[N][N];
-    flow = new long[N][N];
-    cost = new long[N][N];
+    // Create a queue, enqueue source vertex
+    // and mark source vertex as visited
+    Queue<Integer> q = new LinkedList<Integer>();
+    q.add(s);
+    visited[s] = true;
+    parent[s] = -1;
 
-    found = new boolean[N];
-
-    dist = new long[N];
-    pi = new long[N];
-    width = new long[N];
-
-    dad = new Pair[N];
-  }
-
-  public void AddEdge(int from, int to, long cap, long cost) {
-    this.cap[from][to] = cap;
-    this.cost[from][to] = cost;
-  }
-
-  private void Relax(int s, int k, long cap, long cost, int dir) {
-    long val = dist[s] + pi[s] - pi[k] + cost;
-
-    if (cap != 0 && val < dist[k]) {
-      dist[k] = val;
-      dad[k] = new Pair<>((long)s, (long)dir);
-      width[k] = Math.min(cap, width[s]);
-    }
-  }
-
-  private long Dijkstra(int s, int t) {
-    Arrays.fill(found, false);
-    Arrays.fill(dist, INF);
-    Arrays.fill(width, 0);
-
-    dist[s] = 0;
-    width[s] = INF;
-
-    while (s != -1) {
-      int best = -1;
-      found[s] = true;
-      for (int k = 0; k < N; k++) {
-        if (found[k])
-          continue;
-        Relax(s, k, cap[s][k] - flow[s][k], cost[s][k], 1);
-        Relax(s, k, flow[k][s], -cost[k][s], -1);
-        if (best == -1 || dist[k] < dist[best])
-          best = k;
-      }
-      s = best;
-    }
-
-    for (int k = 0; k < N; k++)
-      pi[k] = Math.min(pi[k] + dist[k], INF);
-    
-    return width[t];
-  }
-
-  public Pair<Long,Long> GetMaxFlow(int s, int t) {
-    long totflow = 0, totcost = 0;
-    long amt;
-    while ((amt = Dijkstra(s, t)) != 0) {
-      totflow += amt;
-      for (int x = t; x != s; x = dad[x].e1.intValue()) {
-        if (dad[x].e2 == 1) {
-          flow[dad[x].e1.intValue()][x] += amt;
-          totcost += amt * cost[dad[x].e1.intValue()][x];
-        } else {
-          flow[x][dad[x].e1.intValue()] -= amt;
-          totcost -= amt * cost[x][dad[x].e1.intValue()];
+    // Standard BFS Loop
+    while (!q.isEmpty()) {
+      int v = q.poll();
+      for (int i = 0; i < rGraph.length; i++) {
+        if (rGraph[v][i] > 0 && !visited[i]) {
+          q.offer(i);
+          visited[i] = true;
+          parent[i] = v;
         }
       }
     }
-    return new Pair<Long,Long>(totflow, totcost);
+
+    // If we reached sink in BFS starting
+    // from source, then return true, else false
+    return (visited[t] == true);
   }
-  
-  public static void main(String[] args) {
+
+  // A DFS based function to find all reachable
+  // vertices from s. The function marks visited[i]
+  // as true if i is reachable from s. The initial
+  // values in visited[] must be false. We can also
+  // use BFS to find reachable vertices
+  private static void dfs(int[][] rGraph, int s, boolean[] visited) {
+    visited[s] = true;
+    for (int i = 0; i < rGraph.length; i++) {
+      if (rGraph[s][i] > 0 && !visited[i]) {
+        dfs(rGraph, i, visited);
+      }
+    }
+  }
+
+  // Prints the minimum s-t cut
+  private static void minCut(int[][] graph, int s, int t) {
+    int u, v;
+
+    // Create a residual graph and fill the residual
+    // graph with given capacities in the original
+    // graph as residual capacities in residual graph
+    // rGraph[i][j] indicates residual capacity of edge i-j
+    int[][] rGraph = new int[graph.length][graph.length];
+    for (int i = 0; i < graph.length; i++) {
+      for (int j = 0; j < graph.length; j++) {
+        rGraph[i][j] = graph[i][j];
+      }
+    }
+
+    // This array is filled by BFS and to store path
+    int[] parent = new int[graph.length];
+
+    // Augment the flow while there is path from source to sink
+    while (bfs(rGraph, s, t, parent)) {
+
+      // Find minimum residual capacity of the edges
+      // along the path filled by BFS. Or we can say
+      // find the maximum flow through the path found.
+      int pathFlow = Integer.MAX_VALUE;
+      for (v = t; v != s; v = parent[v]) {
+        u = parent[v];
+        pathFlow = Math.min(pathFlow, rGraph[u][v]);
+      }
+
+      // update residual capacities of the edges and
+      // reverse edges along the path
+      for (v = t; v != s; v = parent[v]) {
+        u = parent[v];
+        rGraph[u][v] = rGraph[u][v] - pathFlow;
+        rGraph[v][u] = rGraph[v][u] + pathFlow;
+      }
+    }
+
+    // Flow is maximum now, find vertices reachable from s
+    boolean[] isVisited = new boolean[graph.length];
+    dfs(rGraph, s, isVisited);
+
+    boolean empty = true;
+    
+    // Print all edges that are from a reachable vertex to
+    // non-reachable vertex in the original graph
+    for (int i = 0; i < graph.length; i++) {
+      for (int j = 0; j < graph.length; j++) {
+        if (graph[i][j] > 0 && isVisited[i] && !isVisited[j]) {
+          System.out.print(i + " " + j + " ");
+          empty = false;
+        }
+      }
+    }
+    
+    if (empty)
+      System.out.println(-1);
+      
+  }
+
+  // Driver Program
+  public static void main(String args[]) {
+
     Scanner sc = new Scanner(System.in);
 
-    int F = sc.nextInt();
-    int P = sc.nextInt();
+    int T = sc.nextInt();
 
-    int start = 0;
-    int end = F;
-    
-    int cows = 0;
-    
-    MinCostMaxFlow g = new MinCostMaxFlow(25000);
+    while (T-- > 0) {
+      int N = sc.nextInt();
 
-    for (int i = 0; i < F; i++) {
-      int ci = sc.nextInt();
-      int si = sc.nextInt();
+      int graph[][] = new int[N][N];
 
-      cows += ci;
-      
-      g.AddEdge(start, i, ci, 0);
-      g.AddEdge(i, end, si, 0);
-    }
-    
+      // build adjacency matrix
+      for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+          graph[i][j] = sc.nextInt();
+        }
+      }
 
-    for (int i = 0; i < P; i++) {
-      int f1 = sc.nextInt() - 1;
-      int f2 = sc.nextInt() - 1;
+      int s = sc.nextInt();
       int t = sc.nextInt();
+      minCut(graph, s, t);
 
-      g.AddEdge(f1, f2, Long.MAX_VALUE / 4, t);
-      g.AddEdge(f2, f1, Long.MAX_VALUE / 4, t);
+      System.out.println();
     }
-
-    System.out.println(g.GetMaxFlow(0, F));
+    sc.close();
   }
 }

@@ -98,12 +98,6 @@ class Fence {
 	int v2;
 }
 
-class Edge {
-	int u;
-	int v;
-	int weight;
-}
-
 class MinimumCycle {
 	final int INF = 0x3f3f3f3f;
 	
@@ -138,10 +132,7 @@ class MinimumCycle {
 		}
 	 
 	    // add Edge to edge list
-	    Edge e = new Edge();
-	    e.u = u;
-	    e.v = v;
-	    e.weight = w;
+	    Edge e = new Edge(u, v, w);
 	    edge.add(e);
 	}
 
@@ -232,10 +223,10 @@ class MinimumCycle {
 	        // remove from graph and then find shortest path
 	        // between these two vertex using Dijkstra's
 	        // shortest path algorithm .
-	        removeEdge( e.u, e.v, e.weight ) ;
+	        removeEdge( e.v, e.w, e.weight ) ;
 	 
 	        // minimum distance between these two vertices
-	        int distance = ShortestPath( e.u, e.v );
+	        int distance = ShortestPath( e.v, e.w );
 	 
 	        // to make a cycle we have to add weight of
 	        // currently removed edge if this is the shortest
@@ -243,7 +234,7 @@ class MinimumCycle {
 	        min_cycle = min( min_cycle, distance + e.weight );
 	 
 	        //  add current edge back to the graph
-	        addEdge( e.u, e.v, e.weight );
+	        addEdge( e.v, e.w, e.weight );
 	    }
 	 
 	    // return shortest cycle
