@@ -1,106 +1,48 @@
 import java.util.Scanner;
 
 public class Main {
-	
-	static final int EAST = 4;
-	static final int SOUTH = 8;
-	
+
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 
-		int H = sc.nextInt();
-		int W = sc.nextInt();
+		int[][] fabric = new int[1000][1000];
 		
-		Graph G = new Graph(H*W);
-		
-		for (int i = 0; i < H * W; i++) {
-			int room = sc.nextInt();
-			
-			if ((room & EAST) == 0) {
-				G.addEdge(i, i+1);
-			}
+		while (true) {
+			String s = sc.nextLine();
 
-			if ((room & SOUTH) == 0) {
-				G.addEdge(i, i+W);
+			if (s.equals("x"))
+				break;
+
+			int idx1 = s.indexOf('@');
+			int idx2 = s.indexOf(',');
+			int idx3 = s.indexOf(':');
+			int idx4 = s.indexOf('x');
+
+			int left = Integer.parseInt(s.substring(idx1 + 2, idx2));
+			int top = Integer.parseInt(s.substring(idx2 + 1, idx3));
+			int width = Integer.parseInt(s.substring(idx3 + 2, idx4));
+			int height = Integer.parseInt(s.substring(idx4 + 1));
+
+			for (int i = top; i < top + height; i++) {
+				for (int j = left; j < left + width; j++) {
+					fabric[i][j]++;
+				}
+			}
+		//	System.out.println(left + " " + top + " " + width + " " + height);
+		}
+		
+		int answer = -0;
+		
+		for (int i = 0; i < 1000; i++) {
+			for (int j = 0; j < 1000; j++) {
+				if (fabric[i][j] > 1)
+					answer++;
 			}
 		}
 		
+		System.out.println(answer);
+		
 		sc.close();
-		
-		CC cc = new CC(G);
-	
-		int max = 0;
-	    for (int v = 0; v < G.V(); v++) {
-	    	max = Math.max(max,  cc.size(v));
-	    }
-
-		System.out.println(cc.count());
-		System.out.println(max);
-		
 	}
-}
 
-class CC {
-    private boolean[] marked;   // marked[v] = has vertex v been marked?
-    private int[] id;           // id[v] = id of connected component containing v
-    private int[] size;         // size[id] = number of vertices in given component
-    private int count;          // number of connected components
-
-    /**
-     * Computes the connected components of the undirected graph {@code G}.
-     *
-     * @param G the undirected graph
-     */
-    public CC(Graph G) {
-        marked = new boolean[G.V()];
-        id = new int[G.V()];
-        size = new int[G.V()];
-        for (int v = 0; v < G.V(); v++) {
-            if (!marked[v]) {
-                dfs(G, v);
-                count++;
-            }
-        }
-    }
-
-    // depth-first search for a Graph
-    private void dfs(Graph G, int v) {
-        marked[v] = true;
-        id[v] = count;
-        size[count]++;
-        for (int w : G.adj(v)) {
-            if (!marked[w]) {
-                dfs(G, w);
-            }
-        }
-    }
-
-    /**
-     * Returns the component id of the connected component containing vertex {@code v}.
-     */
-    public int id(int v) {
-        return id[v];
-    }
-
-    /**
-     * Returns the number of vertices in the connected component containing vertex {@code v}.
-     */
-    public int size(int v) {
-        return size[id[v]];
-    }
-
-    /**
-     * Returns the number of connected components in the graph {@code G}.
-     */
-    public int count() {
-        return count;
-    }
-
-    /**
-     * Returns true if vertices {@code v} and {@code w} are in the same
-     * connected component.
-     */
-    public boolean connected(int v, int w) {
-        return id(v) == id(w);
-    }
 }
