@@ -1,153 +1,97 @@
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
-class Dinic {
+class PT {
+  int x, y;
 
-  private final int MAXM = 25000;
-  private final int MAXN = 25000;
-
-  private int start, end;
-  private int edgeCount = 0;
-
-  private int[] head;
-  private int[] vertex;
-  private int[] next;
-  private int[] capacity;
-  private int[] flow;
-  private int[] dist;
-  private int[] curr;
-
-  public Dinic() {
-    head = new int[MAXN];
-    Arrays.fill(head, -1);
-
-    vertex = new int[MAXM];
-    next = new int[MAXM];
-    capacity = new int[MAXM];
-    flow = new int[MAXM];
-
-    dist = new int[MAXN];
-    curr = new int[MAXN];
-  }
-
-  public void addEdge(int uu, int vv, int ca) {
-    vertex[edgeCount] = vv;
-    capacity[edgeCount] = ca;
-    flow[edgeCount] = 0;
-    next[edgeCount] = head[uu];
-    head[uu] = edgeCount++;
-
-    vertex[edgeCount] = uu;
-    capacity[edgeCount] = 0;
-    flow[edgeCount] = 0;
-    next[edgeCount] = head[vv];
-    head[vv] = edgeCount++;
-  }
-
-  private boolean bfs() {
-    Arrays.fill(dist, -1);
-    dist[start] = 0;
-
-    Queue<Integer> qu = new LinkedList<Integer>();
-    qu.add(start);
-
-    while (!qu.isEmpty()) {
-      int u = qu.poll();
-
-      for (int e = head[u]; e != -1; e = next[e])
-        if (dist[vertex[e]] == -1 && capacity[e] > flow[e]) {
-          dist[vertex[e]] = dist[u] + 1;
-          qu.add(vertex[e]);
-        }
-    }
-    return dist[end] != -1;
-  }
-
-  private int dfs(int u, int a) {
-    if (u == end || a == 0)
-      return a;
-
-    int f, Flow = 0;
-
-    for (int e = curr[u]; e != -1; e = next[e]) {
-      curr[u] = e;
-      if (dist[vertex[e]] == dist[u] + 1
-          && (f = dfs(vertex[e], Math.min(a, capacity[e] - flow[e]))) > 0) {
-        flow[e] += f;
-        flow[e ^ 1] -= f;
-        Flow += f;
-        a -= f;
-
-        if (a == 0)
-          break;
-      }
-    }
-    return Flow;
-  }
-
-  public int maxflow(int start, int end) {
-    this.start = start;
-    this.end = end;
-
-    int Flow = 0;
-
-    while (bfs()) {
-      curr = head.clone();
-      Flow += dfs(start, Integer.MAX_VALUE);
-    }
-    return Flow;
+  PT(int x, int y) {
+    this.x = x;
+    this.y = y;
   }
 }
 
-public class Main {
+
+class GridMarker {
+  int point;
+  int dist;
+  boolean duplicate;
+
+  GridMarker(int p, int d) {
+    point = p;
+    dist = d;
+    duplicate = false;
+  }
+}
+
+
+class Main {
 
   public static void main(String[] args) {
-
     Scanner sc = new Scanner(System.in);
 
-    int F = sc.nextInt();
-    int P = sc.nextInt();
+    int maxX = 0;
+    int maxY = 0;
 
-    int start = 0;
-    int end = F;
-    
-    int cows = 0;
-    
-    Dinic g = new Dinic();
+    List<PT> points = new ArrayList<PT>();
 
-    for (int i = 0; i < F; i++) {
-      int ci = sc.nextInt();
-      int si = sc.nextInt();
+    while (true) {
+      // while (sc.hasNextLine()) {
+      String line = sc.nextLine();
 
-      cows += ci;
-      
-      g.addEdge(start, i, ci);
-      g.addEdge(i, end, si);
+      if (line.equals("x"))
+        break;
+
+      String[] arr = line.split(", ");
+
+      int x = Integer.parseInt(arr[0]);
+      int y = Integer.parseInt(arr[1]);
+
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+
+      points.add(new PT(x, y));
     }
-    
 
-    for (int i = 0; i < P; i++) {
-      int f1 = sc.nextInt() - 1;
-      int f2 = sc.nextInt() - 1;
-      int t = sc.nextInt();
-
-      g.addEdge(start, i, ci);
-
-    }
     sc.close();
+
+    boolean[] infinite = new boolean[points.size()];
+    int[] area = new int[points.size()];
     
-    int start = 2 * N + F + D;
-    int end = 2 * N + F + D + 1;
+    for (int yy = 0; yy <= maxY; yy++) {
+      for (int xx = 0; xx <= maxX; xx++) {
+        int minPoint = -1;
+        int minDist = 9999;
+        
+        for (int i = 0; i < points.size(); i++) {
+          PT pt = points.get(i);
 
-    for (int i = 0; i < F; i++) {
-      g.addEdge(start, 2 * N + i, 1);
-    }
-    for (int i = 0; i < D; i++) {
-      g.addEdge(2 * N + F + i, end, 1);
+          int dist = Math.abs(pt.x - xx) + Math.abs(pt.y - yy);
+
+          if (dist < minDist) {
+            minDist = dist;
+            minPoint = i;
+          } else if (dist == minDist) {
+            minPoint = -1;
+          }
+        }
+        
+        if (minPoint != -1) {
+          if (xx == maxX || xx == 0 || yy == maxY || yy == 0)
+            infinite[minPoint] = true;
+          area[minPoint]++;
+        }
+      }
     }
 
-    System.out.println(g.maxflow(start,end));
+    int maxArea = 0;
+
+    for (int i = 0; i < area.length; i++) {
+      if (area[i] > maxArea && !infinite[i])
+        maxArea = area[i];
+    }
+
+    System.out.println(maxArea);
   }
+
 }
